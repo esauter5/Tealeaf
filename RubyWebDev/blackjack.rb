@@ -11,10 +11,14 @@ def initialize_values
 	cardValues
 end
 
-def generate_deck
+def generate_deck(numDecks)
 	ranks = %w{ 2 3 4 5 6 7 8 9 10 Jack Queen King Ace }
 	suits = %w{ Diamonds Hearts Spades Clubs }
-	deck = ranks.product(suits).map{|card| card.join(" of ")}.shuffle
+	tempDeck = ranks.product(suits).map{|card| card.join(" of ")}
+	deck = []
+	numDecks.times { deck.concat(tempDeck) }
+
+	deck
 end
 
 def deal_card(hand,deck)
@@ -68,16 +72,18 @@ def determine_winner(playerScore, dealerScore)
 	end
 end
 
-def play
+def play(deck, fullDeckSize)
 	playerScore = 0
 	dealerScore = 0
 
 	playerStay = false
 	playerBust = false
+	playerBlackjack = false
+	dealerBlackjack = false
 
 	cardValues = initialize_values
 
-	deck = generate_deck
+	#puts "Deck size: #{deck.size}"
 
 	playerCards = []
 	dealerCards = []
@@ -88,6 +94,9 @@ def play
 	playerScore = hand_value(playerCards, cardValues)
 	dealerScore = hand_value(dealerCards, cardValues)
 
+	playerBlackjack = true if playerScore == 21
+	dealerBlackjack = true if dealerScore == 21
+
 
 	print_player_cards(playerCards)
 	print_dealer_cards(dealerCards,playerStay)
@@ -95,7 +104,7 @@ def play
 	puts "#{$name}'s score: #{playerScore}"
 
 
-	until playerStay == true || playerBust == true
+	until playerStay || playerBust || playerBlackjack || dealerBlackjack
 		puts "Would you like to hit or stay?"
 
 		case gets.chomp
@@ -108,14 +117,20 @@ def play
 				puts "#{$name}'s score: #{playerScore}"
 
 				playerBust = true if playerScore > 21
+
 			when 'stay'
 				playerStay = true
 		end
 	end
 
-	if playerBust == true
+
+	if playerBlackjack
+		puts "You have BLACKJACK!!! You WIN!!!"
+	elsif dealerBlackjack
+		puts "Dealer BLACKJACK!!! Dealer WINS!!!"
+	elsif playerBust
 		puts "You BUSTED!!! Dealer WINS!!!"
-	elsif playerStay == true
+	elsif playerStay
 		until dealerScore >= 17
 			deal_card(dealerCards, deck)
 			dealerScore = hand_value(dealerCards, cardValues)
@@ -130,12 +145,24 @@ def play
 			determine_winner(playerScore, dealerScore)
 		end
 	end
+
 end
 
-puts "What is your name?"
-$name = "eric" #gets.chomp
 
-play
+
+
+
+puts "What is your name?"
+$name = gets.chomp
+
+puts "How many decks would you like to use?"
+numDecks = gets.chomp.to_i
+fullDeck = generate_deck(numDecks)
+fullDeckSize = fullDeck.size
+
+deck = fullDeck.shuffle
+
+play(deck,fullDeckSize)
 playAgain = true
 
 until playAgain == false
@@ -143,7 +170,10 @@ until playAgain == false
 	
 	case gets.chomp	
 		when 'y'
-			play
+			if deck.size < fullDeckSize * 0.25
+				deck = generate_deck(fullDeckSize/52).shuffle
+			end
+			play(deck,fullDeckSize)
 		when 'n'
 			playAgain = false
 	end
