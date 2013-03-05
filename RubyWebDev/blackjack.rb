@@ -1,7 +1,8 @@
 
 def initialize_values
 	cardValues = Hash.new(0)
-	(2..10).each {|i| cardValues[i.to_s.to_sym] = i }
+	(2..9).each {|i| cardValues[i.to_s.to_sym] = i }
+	cardValues[:"1"] = 10
 	cardValues[:J] = 10
 	cardValues[:Q] = 10
 	cardValues[:K] = 10
@@ -43,7 +44,8 @@ def hand_value(hand, cardValues)
 	hand.each_with_index do |v,i|
 		if score > 10 && v[0] == "A"
 			score += 1
-		else 
+		else
+			puts "Value #{v} #{cardValues[v[0].to_sym]}" 
 			score += cardValues[v[0].to_sym]
 		end
 	end
@@ -61,50 +63,50 @@ def determine_winner(playerScore, dealerScore)
 	end
 end
 
-playerScore = 0
-dealerScore = 0
+def play
+	playerScore = 0
+	dealerScore = 0
 
-playerStay = false
-playerBust = false
+	playerStay = false
+	playerBust = false
 
-cardValues = initialize_values
+	cardValues = initialize_values
 
-deck = generate_deck
+	deck = generate_deck
 
-playerCards = []
-dealerCards = []
+	playerCards = []
+	dealerCards = []
 
-2.times { deal_card(playerCards, deck) }
-2.times { deal_card(dealerCards, deck) }
+	2.times { deal_card(playerCards, deck) }
+	2.times { deal_card(dealerCards, deck) }
 
-playerScore = hand_value(playerCards, cardValues)
-dealerScore = hand_value(dealerCards, cardValues)
-
-
-
-print_player_cards(playerCards)
-print_dealer_cards(dealerCards,playerStay)
-
-puts "Player score is: #{playerScore}"
+	playerScore = hand_value(playerCards, cardValues)
+	dealerScore = hand_value(dealerCards, cardValues)
 
 
-until playerStay == true || playerBust == true
-	puts "Would you like to hit or stay?"
+	print_player_cards(playerCards)
+	print_dealer_cards(dealerCards,playerStay)
 
-	case gets.chomp
-	when 'hit'
-		deal_card(playerCards,deck)
-		playerScore = hand_value(playerCards,cardValues)
-		print_player_cards(playerCards)
-		#playerScore += cardValues[card[0].to_sym]
-		#playerCards << card
-		puts "Player Score: #{playerScore}"
+	puts "Player score is: #{playerScore}"
 
-		playerBust = true if playerScore > 21
-	when 'stay'
-		playerStay = true
+
+	until playerStay == true || playerBust == true
+		puts "Would you like to hit or stay?"
+
+		case gets.chomp
+			when 'hit'
+				deal_card(playerCards,deck)
+				playerScore = hand_value(playerCards,cardValues)
+				print_player_cards(playerCards)
+				#playerScore += cardValues[card[0].to_sym]
+				#playerCards << card
+				puts "Player Score: #{playerScore}"
+
+				playerBust = true if playerScore > 21
+			when 'stay'
+				playerStay = true
+		end
 	end
-end
 
 	if playerBust == true
 		puts "You BUSTED!!! Dealer WINS!!!"
@@ -123,5 +125,22 @@ end
 			determine_winner(playerScore, dealerScore)
 		end
 	end
+end
+
+play
+playAgain = true
+
+until playAgain == false
+	puts "Do you want to play again? (y/n)"
+	
+	case gets.chomp	
+		when 'y'
+			play
+		when 'n'
+			playAgain = false
+	end
+end
+
+
 
 
