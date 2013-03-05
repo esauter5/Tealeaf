@@ -23,9 +23,8 @@ end
 
 def print_player_cards(playerCards)
 	playerCards.each_with_index do |v,i| 
-	puts "Player Card #{i+1}: #{v}" 
-	#playerScore += cardValues[v[0].to_sym]
-end
+		puts "#{$name} Card #{i+1}: #{v}" 
+	end
 end
 
 def print_dealer_cards(dealerCards, playerStay)
@@ -40,12 +39,18 @@ end
 
 def hand_value(hand, cardValues)
 	score = 0
+	hasAce = false
 
 	hand.each_with_index do |v,i|
 		if score > 10 && v[0] == "A"
 			score += 1
+			hasAce = true
+		elsif v[0] == "A"
+			score += cardValues[v[0].to_sym]
+			hasAce = true
+		elsif score + cardValues[v[0].to_sym] > 21 && hasAce
+			score += (cardValues[v[0].to_sym] - 10)
 		else
-			puts "Value #{v} #{cardValues[v[0].to_sym]}" 
 			score += cardValues[v[0].to_sym]
 		end
 	end
@@ -87,7 +92,7 @@ def play
 	print_player_cards(playerCards)
 	print_dealer_cards(dealerCards,playerStay)
 
-	puts "Player score is: #{playerScore}"
+	puts "#{$name}'s score: #{playerScore}"
 
 
 	until playerStay == true || playerBust == true
@@ -100,7 +105,7 @@ def play
 				print_player_cards(playerCards)
 				#playerScore += cardValues[card[0].to_sym]
 				#playerCards << card
-				puts "Player Score: #{playerScore}"
+				puts "#{$name}'s score: #{playerScore}"
 
 				playerBust = true if playerScore > 21
 			when 'stay'
@@ -126,6 +131,9 @@ def play
 		end
 	end
 end
+
+puts "What is your name?"
+$name = "eric" #gets.chomp
 
 play
 playAgain = true
