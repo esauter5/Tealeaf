@@ -1,22 +1,22 @@
 
 def initialize_values
-	cardValues = Hash.new(0)
-	(2..9).each {|i| cardValues[i.to_s.to_sym] = i }
-	cardValues[:"1"] = 10 #Represents 10 since I read first character
-	cardValues[:J] = 10
-	cardValues[:Q] = 10
-	cardValues[:K] = 10
-	cardValues[:A] = 11
+	card_values = Hash.new(0)
+	(2..9).each {|i| card_values[i.to_s.to_sym] = i }
+	card_values[:"1"] = 10 #Represents 10 since I read first character
+	card_values[:J] = 10
+	card_values[:Q] = 10
+	card_values[:K] = 10
+	card_values[:A] = 11
 
-	cardValues
+	card_values
 end
 
-def generate_deck(numDecks)
+def generate_deck(num_decks)
 	ranks = %w{ 2 3 4 5 6 7 8 9 10 Jack Queen King Ace }
 	suits = %w{ Diamonds Hearts Spades Clubs }
-	tempDeck = ranks.product(suits).map{|card| card.join(" of ")}
+	temp_deck = ranks.product(suits).map{|card| card.join(" of ")}
 	deck = []
-	numDecks.times { deck.concat(tempDeck) }
+	num_decks.times { deck.concat(temp_deck) }
 
 	deck
 end
@@ -25,133 +25,164 @@ def deal_card(hand,deck)
 	hand << deck.pop
 end
 
-def print_player_cards(playerCards)
-	playerCards.each_with_index do |v,i| 
+def print_player_cards(player_cards)
+	player_cards.each_with_index do |v,i| 
 		puts "#{$name} Card #{i+1}: #{v}" 
 	end
 end
 
-def print_dealer_cards(dealerCards, playerStay)
-	dealerCards.each_with_index do |v,i| 
-		if i == 0 && playerStay == false
+def print_dealer_cards(dealer_cards, player_stay)
+	dealer_cards.each_with_index do |v,i| 
+		if i == 0 && player_stay == false
 			puts "Dealer Card #{i+1}: Hidden" 
 		else
 			puts "Dealer Card #{i+1}: #{v}" 
 		end
 	end
-		puts " " if !playerStay
+		puts " " if !player_stay
 end
 
-def hand_value(hand, cardValues)
+def hand_value(hand, card_values)
 	score = 0
-	hasAce = false
+	has_ace = false
 
 	hand.each_with_index do |v,i|
 		if score > 10 && v[0] == "A"
 			score += 1
-			hasAce = true
+			has_ace = true
 		elsif v[0] == "A"
-			score += cardValues[v[0].to_sym]
-			hasAce = true
-		elsif score + cardValues[v[0].to_sym] > 21 && hasAce
-			score += (cardValues[v[0].to_sym] - 10)
+			score += card_values[v[0].to_sym]
+			has_ace = true
+		elsif score + card_values[v[0].to_sym] > 21 && has_ace
+			score += (card_values[v[0].to_sym] - 10)
 		else
-			score += cardValues[v[0].to_sym]
+			score += card_values[v[0].to_sym]
 		end
 	end
 
 	score
 end
 
-def determine_winner(playerScore, dealerScore)
-	if playerScore > dealerScore
+def determine_winner(player_score, dealer_score)
+	if player_score > dealer_score
 		puts "You win!!!"
-	elsif dealerScore > playerScore
+		$bank += $bet * $dd_factor
+	elsif dealer_score > player_score
 		puts "Dealer wins!!!"
+		$bank -= $bet * $dd_factor
 	else
 		puts "Tie!!!"
 	end
 end
 
-def play(deck, fullDeckSize)
-	playerScore = 0
-	dealerScore = 0
+def play(deck, full_deck_size)
+	player_score = 0
+	dealer_score = 0
 
-	playerStay = false
-	playerBust = false
-	playerBlackjack = false
-	dealerBlackjack = false
+	player_stay = false
+	player_bust = false
+	player_blackjack = false
+	dealer_blackjack = false
 
-	cardValues = initialize_values
+	$dd_factor = 1
 
-	playerCards = []
-	dealerCards = []
+	card_values = initialize_values
 
-	deal_card(playerCards, deck)
-	deal_card(dealerCards, deck)
-	deal_card(playerCards, deck)
-	deal_card(dealerCards, deck)
+	player_cards = []
+	dealer_cards = []
 
-	playerScore = hand_value(playerCards, cardValues)
-	dealerScore = hand_value(dealerCards, cardValues)
+	deal_card(player_cards, deck)
+	deal_card(dealer_cards, deck)
+	deal_card(player_cards, deck)
+	deal_card(dealer_cards, deck)
 
-	playerBlackjack = true if playerScore == 21
-	dealerBlackjack = true if dealerScore == 21
+	player_score = hand_value(player_cards, card_values)
+	dealer_score = hand_value(dealer_cards, card_values)
+
+	player_blackjack = true if player_score == 21
+	dealer_blackjack = true if dealer_score == 21
 
 
-	print_player_cards(playerCards)
-	print_dealer_cards(dealerCards,playerStay)
+	print_player_cards(player_cards)
+	print_dealer_cards(dealer_cards,player_stay)
 
-	puts "=>#{$name}'s score: #{playerScore}"
+	can_dd = true
+
+	puts "=>#{$name}'s score: #{player_score}"
 	puts " "
 
 
-	until playerStay || playerBust || playerBlackjack || dealerBlackjack
-		puts "Would you like to hit or stay? (h/s)"
+	until player_stay || player_bust || player_blackjack || dealer_blackjack
+		if can_dd
+			puts "Would you like to hit or stay or double down? (h/s/dd)"
+		else
+			puts "Would you like to hit or stay? (h/s)"
+		end
 
 		case gets.chomp
 			when 'h'
-				deal_card(playerCards,deck)
-				playerScore = hand_value(playerCards,cardValues)
-				print_player_cards(playerCards)
-				print_dealer_cards(dealerCards,playerStay)
-				#playerScore += cardValues[card[0].to_sym]
-				#playerCards << card
-				puts "=>#{$name}'s score: #{playerScore}"
-
-				playerBust = true if playerScore > 21
+				deal_card(player_cards,deck)
+				player_score = hand_value(player_cards,card_values)
+				print_player_cards(player_cards)
+				print_dealer_cards(dealer_cards,player_stay)
+				puts "=>#{$name}'s score: #{player_score}"
+				can_dd = false
+				player_bust = true if player_score > 21
 
 			when 's'
-				playerStay = true
+				player_stay = true
+			when 'dd'
+				if $bet > $bank/2
+					puts "You don't have enough money to double down!"
+					can_dd = false
+				elsif can_dd
+					$dd_factor = 2
+					deal_card(player_cards,deck)
+					player_score = hand_value(player_cards,card_values)
+					print_player_cards(player_cards)
+					print_dealer_cards(dealer_cards,player_stay)
+					puts "=>#{$name}'s score: #{player_score}"
+					can_dd = false
+					player_bust = true if player_score > 21
+					player_stay = true
+				else
+					puts "You cannot currently double down!"
+				end
 		end
 	end
 
 
-	if playerBlackjack
+	if player_blackjack
 		puts "You have BLACKJACK!!! You WIN!!!"
-	elsif dealerBlackjack
+		$bank += $bet * 1.5
+	elsif dealer_blackjack
 		puts "Dealer BLACKJACK!!! Dealer WINS!!!"
-	elsif playerBust
+		$bank -= $bet
+	elsif player_bust
 		puts "You BUSTED!!! Dealer WINS!!!"
-	elsif playerStay
-		until dealerScore >= 17
-			deal_card(dealerCards, deck)
-			dealerScore = hand_value(dealerCards, cardValues)
+		$bank -= $bet * $dd_factor
+	elsif player_stay
+		until dealer_score >= 17
+			deal_card(dealer_cards, deck)
+			dealer_score = hand_value(dealer_cards, card_values)
 		end
 
-		print_dealer_cards(dealerCards, playerStay)
-		puts "Dealer Score: #{dealerScore}"
+		print_dealer_cards(dealer_cards, player_stay)
+		puts "Dealer Score: #{dealer_score}"
 
-		if dealerScore > 21
+		if dealer_score > 21
 			puts "Dealer BUSTED!!! You win!!!"
+			$bank += $bet * $dd_factor
 		else
-			determine_winner(playerScore, dealerScore)
+			determine_winner(player_score, dealer_score)
 		end
 	end
 
 end
 
 
+$bank = 2000
+$bet = 5
 
 
 
@@ -159,27 +190,49 @@ puts "What is your name?"
 $name = gets.chomp
 
 puts "How many decks would you like to use?"
-numDecks = gets.chomp.to_i
-fullDeck = generate_deck(numDecks)
-fullDeckSize = fullDeck.size
+num_decks = gets.chomp.to_i
+full_deck = generate_deck(num_decks)
+full_deck_size = full_deck.size
 
-deck = fullDeck.shuffle
+deck = full_deck.shuffle
 
-play(deck,fullDeckSize)
-playAgain = true
+puts "Current money: #{$bank}", ""
+puts "How much would you like to bet?"
+			$bet = gets.chomp.to_i
 
-until playAgain == false
+play(deck,full_deck_size)
+puts "Current money: #{$bank}", ""
+play_again = true
+
+until play_again == false
 	puts "Do you want to play again? (y/n)"
 	
 	case gets.chomp	
 		when 'y'
 			puts "*******************************"
-			if deck.size < fullDeckSize * 0.25
-				deck = generate_deck(fullDeckSize/52).shuffle
+			puts "Current money: #{$bank}", ""
+			puts "How much would you like to bet?"
+			$bet = gets.chomp.to_i
+
+			if $bet <= $bank
+				if deck.size < full_deck_size * 0.25
+					deck = generate_deck(full_deck_size/52).shuffle
+				end
+				if $bank == 0
+					play_again = false
+					puts "You are broke. Consider attending Gambler's Anonymous meetings"
+				else
+					play(deck,full_deck_size)
+					puts "Current money: #{$bank}", ""
+				end
+			elsif $bank > 5
+				puts "Sorry you don't have enough to bet that amount! Please bet a lower amount"
+			else
+				puts "You are broke. Consider attending Gambler's Anonymous meetings"
+				play_again = false
 			end
-			play(deck,fullDeckSize)
 		when 'n'
-			playAgain = false
+			play_again = false
 	end
 end
 
