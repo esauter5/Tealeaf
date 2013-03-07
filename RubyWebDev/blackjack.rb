@@ -2,7 +2,7 @@
 def initialize_values
 	cardValues = Hash.new(0)
 	(2..9).each {|i| cardValues[i.to_s.to_sym] = i }
-	cardValues[:"1"] = 10
+	cardValues[:"1"] = 10 #Represents 10 since I read first character
 	cardValues[:J] = 10
 	cardValues[:Q] = 10
 	cardValues[:K] = 10
@@ -84,15 +84,13 @@ def play(deck, fullDeckSize)
 
 	cardValues = initialize_values
 
-	#puts "Deck size: #{deck.size}"
-
 	playerCards = []
 	dealerCards = []
 
-deal_card(playerCards, deck)
-deal_card(dealerCards, deck)
-deal_card(playerCards, deck)
-deal_card(dealerCards, deck)
+	deal_card(playerCards, deck)
+	deal_card(dealerCards, deck)
+	deal_card(playerCards, deck)
+	deal_card(dealerCards, deck)
 
 	playerScore = hand_value(playerCards, cardValues)
 	dealerScore = hand_value(dealerCards, cardValues)
