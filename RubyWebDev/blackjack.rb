@@ -39,6 +39,7 @@ def print_dealer_cards(dealerCards, playerStay)
 			puts "Dealer Card #{i+1}: #{v}" 
 		end
 	end
+		puts " " if !playerStay
 end
 
 def hand_value(hand, cardValues)
@@ -88,8 +89,10 @@ def play(deck, fullDeckSize)
 	playerCards = []
 	dealerCards = []
 
-	2.times { deal_card(playerCards, deck) }
-	2.times { deal_card(dealerCards, deck) }
+deal_card(playerCards, deck)
+deal_card(dealerCards, deck)
+deal_card(playerCards, deck)
+deal_card(dealerCards, deck)
 
 	playerScore = hand_value(playerCards, cardValues)
 	dealerScore = hand_value(dealerCards, cardValues)
@@ -101,24 +104,26 @@ def play(deck, fullDeckSize)
 	print_player_cards(playerCards)
 	print_dealer_cards(dealerCards,playerStay)
 
-	puts "#{$name}'s score: #{playerScore}"
+	puts "=>#{$name}'s score: #{playerScore}"
+	puts " "
 
 
 	until playerStay || playerBust || playerBlackjack || dealerBlackjack
-		puts "Would you like to hit or stay?"
+		puts "Would you like to hit or stay? (h/s)"
 
 		case gets.chomp
-			when 'hit'
+			when 'h'
 				deal_card(playerCards,deck)
 				playerScore = hand_value(playerCards,cardValues)
 				print_player_cards(playerCards)
+				print_dealer_cards(dealerCards,playerStay)
 				#playerScore += cardValues[card[0].to_sym]
 				#playerCards << card
-				puts "#{$name}'s score: #{playerScore}"
+				puts "=>#{$name}'s score: #{playerScore}"
 
 				playerBust = true if playerScore > 21
 
-			when 'stay'
+			when 's'
 				playerStay = true
 		end
 	end
@@ -170,6 +175,7 @@ until playAgain == false
 	
 	case gets.chomp	
 		when 'y'
+			puts "*******************************"
 			if deck.size < fullDeckSize * 0.25
 				deck = generate_deck(fullDeckSize/52).shuffle
 			end
