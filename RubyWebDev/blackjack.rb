@@ -42,27 +42,6 @@ def print_dealer_cards(dealer_cards, player_stay)
 		puts " " if !player_stay
 end
 
-def hand_value_2(hand, card_values)
-	score = 0
-	has_ace = false
-
-	hand.each_with_index do |v,i|
-		if score > 10 && v[0] == "A"
-			score += 1
-			has_ace = true
-		elsif v[0] == "A"
-			score += card_values[v[0].to_sym]
-			has_ace = true
-		elsif score + card_values[v[0].to_sym] > 21 && has_ace
-			score += (card_values[v[0].to_sym] - 10)
-		else
-			score += card_values[v[0].to_sym]
-		end
-	end
-
-	score
-end
-
 def hand_value(hand, card_values)
 	score = 0
 	non_aces = hand.select { |card| card[0] != "A"}
