@@ -42,7 +42,7 @@ def print_dealer_cards(dealer_cards, player_stay)
 		puts " " if !player_stay
 end
 
-def hand_value(hand, card_values)
+def hand_value_2(hand, card_values)
 	score = 0
 	has_ace = false
 
@@ -57,6 +57,24 @@ def hand_value(hand, card_values)
 			score += (card_values[v[0].to_sym] - 10)
 		else
 			score += card_values[v[0].to_sym]
+		end
+	end
+
+	score
+end
+
+def hand_value(hand, card_values)
+	score = 0
+	non_aces = hand.select { |card| card[0] != "A"}
+	aces = hand.select { |card| card[0] == "A"}
+	num_aces = aces.size
+
+	non_aces.each { |card| score += card_values[card[0].to_sym] }
+	aces.each_with_index do |ace, i|
+		if i == 0 && (score <= 10 - (num_aces - 1))
+			score += 11
+		else
+			score += 1
 		end
 	end
 
@@ -156,6 +174,7 @@ def play(deck, full_deck_size)
 		puts "You have BLACKJACK!!! You WIN!!!"
 		$bank += $bet * 1.5
 	elsif dealer_blackjack
+		print_dealer_cards(dealer_cards,true)
 		puts "Dealer BLACKJACK!!! Dealer WINS!!!"
 		$bank -= $bet
 	elsif player_bust
