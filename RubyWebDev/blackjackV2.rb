@@ -1,13 +1,27 @@
 class Player
-	attr_accessor :name, :bank_roll, :hands, :bet
+	attr_accessor :name, :bank_roll, :hand, :bet
 
 	def initialize(name, bank_roll)
+		@hand = Hand.new
 		@name = name
 		@bank_roll = bank_roll
 	end
 
 
 end
+
+#*****************************
+
+class Dealer
+	attr_accessor :hand
+
+	def initialize
+		@hand = Hand.new
+	end
+
+end
+
+#*****************************
 
 class Deck
 	attr_accessor :cards, :num_decks
@@ -19,24 +33,32 @@ class Deck
 
 end
 
+#*****************************
+
 class Hand
 	attr_accessor :cards, :score
 
 	def initialize
-		cards = []
+		@cards = []
 	end
 
 	def hand_value
 
 	end
 
-	def print_hand
-		cards.each_with_index do |card| 
-			put "Card #{i}: "
-			card.print_card
+	def print_hand(name = "Dealer")
+		cards.each_with_index do |card, i|
+			if name == "Dealer" && i == 0
+				puts "#{name} Card #{i}: Hidden "
+			else
+				print "#{name} Card #{i}: "
+				card.print_card
+			end
 		end
 	end
 end
+
+#*****************************
 
 class Card
 	attr_accessor :suit, :rank, :value
@@ -50,6 +72,8 @@ class Card
 		puts "#{rank} of #{suit}" 
 	end
 end
+
+#*****************************
 
 class GameEngine
 	attr_accessor :player, :dealer
@@ -75,7 +99,6 @@ class GameEngine
 		suits = %w{ Diamonds Hearts Spades Clubs }
 		deck = Deck.new(num_decks)
 		card_values = initialize_values
-		deck = Deck.new(num_decks)
 
 		num_decks.times do 
 			suits.each do |suit|
@@ -87,6 +110,7 @@ class GameEngine
 			end
 		end
 
+		deck.cards.shuffle!
 		deck
 	end
 
@@ -94,16 +118,26 @@ class GameEngine
 
 	end
 
-	def play
+	def play(player)
+
 		deck = generate_deck(1)
+		deck
+		dealer = Dealer.new
 
-		deck.cards.each {|card| puts "#{card.rank} of #{card.suit}" }
+		player.hand.cards << deck.cards.pop
+		dealer.hand.cards << deck.cards.pop
+		player.hand.cards << deck.cards.pop
+		dealer.hand.cards << deck.cards.pop
 
-		hand = Hand.new
-		hand.cards << 5 #deck.cards.pop
-		hand.print_hand
+		player.hand.print_hand(player.name)
+		dealer.hand.print_hand
 	end
 end
 
+
+puts "What is your name?"
+name = gets.chomp
+player = Player.new(name, 2000)
+
 engine = GameEngine.new
-engine.play
+engine.play(player)
