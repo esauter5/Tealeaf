@@ -126,9 +126,9 @@ class Hand
 	score
 	end
 
-	def print_hand(name = "Dealer")
+	def print_hand(name = "Player", status = "hit")
 		cards.each_with_index do |card, i|
-			if name == "Dealer" && i == 0
+			if name == "Dealer" && i == 0 && status == "hit"
 				puts "#{name} Card #{i}: Hidden "
 			else
 				print "#{name} Card #{i}: "
@@ -171,17 +171,19 @@ class GameEngine
 		@dealer.hand.cards << @deck.cards.pop
 	end
 
-	def print_hands
+	def print_hands(status = "hit")
 		@player.hand.print_hand(player.name)
-		@dealer.hand.print_hand
+		@dealer.hand.print_hand("Dealer",status)
 	end
 
 	def calculate_scores
 		@player.hand.hand_value
+		@player.status = "bust" if @player.hand.score > 21
 		@dealer.hand.hand_value
+		@dealer.status = "bust" if @dealer.hand.score > 21
 	end
 
-	def player_turn
+	def player_decision
 		case @player.hit_or_stay
 		when 'h'
 			@player.hand.cards << @deck.cards.pop
@@ -194,7 +196,7 @@ class GameEngine
 		end
 	end
 
-	def dealer_turn
+	def dealer_decision
 		case @dealer.hit_or_stay
 		when 'h'
 			@dealer.hand.cards << @deck.cards.pop
@@ -205,52 +207,97 @@ class GameEngine
 		end
 	end
 
-	def play(player)
-		player_stay = false
-		player_bust = false
-		player_blackjack = false
-		dealer_blackjack = false
+	def player_turn
+		until @player.status == "stay" || @player.status == "bust"
+			player_decision
+			print_hands
+			calculate_scores
+			print_player_score
+		end
+	end
 
-		initial_deal
+	def dealer_turn
+		until @dealer.status == "stay" || @dealer.status == "bust"
+			dealer_decision
+			calculate_scores
+		end
+	end
 
-		print_hands
-		calculate_scores
-
+	def check_blackjack
 		if @player.hand.score == 21
 			@player.status = "blackjack"
 			puts "BLACKJACK!"
 		elsif @dealer.hand.score == 21
 			@dealer.status = "blackjack"
 		end
-		
+	end
+
+	def print_player_score
 		puts "Player Score: #{@player.hand.score}", ""
+	end
 
-		until @player.status == "stay"
-			player_turn
-			print_hands
-			puts "Player Score: #{@player.hand.score}", ""
+	def print_dealer_score
+		puts "Dealer Score: #{@dealer.hand.score}", ""
+	end
+
+	def determine_winner
+		if @player.hand.score == @dealer.hand.score
+			puts "TIE!!!"
+		elsif @player.status == "blackjack"
+			puts "YOU WIN!!!"
+		elsif @dealer.status == "blackjack"
+			puts "DEALER WINS!!!"
+		elsif @player.status == "bust"
+			puts "BUST!!! YOU LOSE!!!"
+		elsif @dealer.status == "bust"
+			puts "DEALER BUST!!! YOU WIN!!!"
+		elsif @player.hand.score > @dealer.hand.score
+			puts "YOU WIN!!!"
+		else
+			puts "DEALER WINS!!!"
 		end
-		puts "HEY"
+	end
 
-		until @dealer.status == "stay"
+	def play(player)
+		player_stay = false
+		player_bust = false
+	  player_blackjack = false
+		dealer_blackjack = false
+
+		initial_deal
+
+		print_hands
+		calculate_scores
+		check_blackjack
+
+		print_player_score
+
+		unless @player.status == "blackjack" || @dealer.status == "blackjack"
+			player_turn
 			dealer_turn
 		end
 
-		print_hands
-		puts "Player Score: #{@player.hand.score}", ""
-		puts "Dealer Score: #{dealer.hand.score}", ""
+		print_hands("stay")
+		print_player_score
+		print_dealer_score
 
-		calculate_scores
-		puts "Score: #{@player.hand.score}", ""
-
-
+		determine_winner
 	end
 end
 
 
 puts "What is your name?"
 name = gets.chomp
-player = Player.new(name, 2000)
 
-engine = GameEngine.new(player)
-engine.play(player)
+continue = 'y'
+
+until continue == 'n'
+	player = Player.new(name, 2000)
+	engine = GameEngine.new(player)
+	engine.play(player)
+	puts "Would you like to play again?"
+	continue = gets.chomp
+end
+
+
+
