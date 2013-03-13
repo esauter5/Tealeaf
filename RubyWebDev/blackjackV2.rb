@@ -259,11 +259,6 @@ class GameEngine
 	end
 
 	def play(player)
-		player_stay = false
-		player_bust = false
-	  player_blackjack = false
-		dealer_blackjack = false
-
 		initial_deal
 
 		print_hands
