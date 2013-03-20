@@ -43,7 +43,7 @@ end
 post '/game/hit' do
   session[:player_cards] << session[:deck].pop
 
-  if check_score > 21
+  if check_score >= 21
     redirect '/game/stay'
   end
 
@@ -59,8 +59,11 @@ post '/game/stay' do
 end
 
 get '/game/stay' do
-    if check_score > 21
+    score = check_score
+    if score > 21
       @error = "You busted!!!"
+    elsif score == 21
+      @error "Blackjack!!!"
     end
     @player_stay = true
 
