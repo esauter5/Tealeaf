@@ -5,6 +5,7 @@ class Player
     @hand = Hand.new
     @name = name
     @bank_roll = bank_roll
+    @bet = 5
     @status = 'active'
   end
 
@@ -24,7 +25,7 @@ class Player
       if @bet > @bank_roll/2
         puts "You don't have enough money to double down!"
         hit_or_stay
-      elsif @hands.cards.size == 2
+      elsif @hand.cards.size == 2
         return 'dd'
       else
         puts "You cannot currently double down!"
@@ -161,7 +162,10 @@ class GameEngine
   def initialize(player)
     @player = player
     @dealer = Dealer.new
-    @deck = Deck.new(1)
+  end
+
+  def shuffle(num_decks)
+    @deck = Deck.new(num_decks)
   end
 
   def initial_deal
@@ -191,8 +195,8 @@ class GameEngine
     when 's'
       @player.status = 'stay'
     when 'dd'
-      @player.hand.cards << @deck.card.pop
-      @player.status = 'active'
+      @player.hand.cards << @deck.cards.pop
+      @player.status = 'stay'
     end
   end
 
@@ -226,9 +230,11 @@ class GameEngine
   def check_blackjack
     if @player.hand.score == 21
       @player.status = "blackjack"
+      @player.bank_roll += @player.bet
       puts "BLACKJACK!"
     elsif @dealer.hand.score == 21
       @dealer.status = "blackjack"
+      @player.bank_roll -= @player.bet
     end
   end
 
@@ -245,16 +251,22 @@ class GameEngine
       puts "TIE!!!"
     elsif @player.status == "blackjack"
       puts "YOU WIN!!!"
+      @player.bank_roll += @player.bet
     elsif @dealer.status == "blackjack"
       puts "DEALER WINS!!!"
+      @player.bank_roll -= @player.bet
     elsif @player.status == "bust"
       puts "BUST!!! YOU LOSE!!!"
+      @player.bank_roll -= @player.bet
     elsif @dealer.status == "bust"
       puts "DEALER BUST!!! YOU WIN!!!"
+      @player.bank_roll += @player.bet
     elsif @player.hand.score > @dealer.hand.score
       puts "YOU WIN!!!"
+      @player.bank_roll += @player.bet
     else
       puts "DEALER WINS!!!"
+      @player.bank_roll -= @player.bet
     end
   end
 
@@ -283,12 +295,18 @@ end
 
 puts "What is your name?"
 name = gets.chomp
+puts "How many decks would you like to use?"
+num_decks = gets.chomp.to_i
+#puts "Current money: #{$bank}", ""
+#puts "How much would you like to bet?"
+#bet = gets.chomp.to_i
 
 continue = 'y'
 
 until continue == 'n'
   player = Player.new(name, 2000)
   engine = GameEngine.new(player)
+  engine.shuffle(2)
   engine.play(player)
   puts "Would you like to play again?"
   continue = gets.chomp
