@@ -43,15 +43,42 @@ end
 post '/game/hit' do
   session[:player_cards] << session[:deck].pop
 
+  if check_score > 21
+    redirect '/game/stay'
+  end
+
   erb :game
 end
 
 post '/game/stay' do
   session[:player_turn] = false
   session[:dealer_cards] << session[:deck].pop
-  @player_stay = true
 
-  erb :game
+
+  redirect '/game/stay'
 end
 
+get '/game/stay' do
+    if check_score > 21
+      @error = "You busted!!!"
+    end
+    @player_stay = true
+
+    erb :game
+end
+
+def check_score
+  score = 0
+  session[:player_cards].each do |card|
+    value = card.split(' ')[0]
+    if value == "jack" || value =="king" || value == "queen"
+      score += 10
+    elsif value == "ace"
+      score += 1
+    else
+      score += value.to_i
+    end
+  end
+  score
+end
 
