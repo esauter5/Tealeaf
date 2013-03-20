@@ -63,7 +63,7 @@ get '/game/stay' do
     if score > 21
       @error = "You busted!!!"
     elsif score == 21
-      @error "Blackjack!!!"
+      @error = "Blackjack!!!"
     end
     @player_stay = true
 
