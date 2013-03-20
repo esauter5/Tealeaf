@@ -1,0 +1,26 @@
+<h2>Blackjack!</h2>
+
+<p>Dealer's Cards</p>
+<% session[:dealer_cards].each_with_index do |card,i| %>
+  <% if !@player_stay && i == 0 %>
+    <img src="/images/cards/cover.jpg">
+  <% else %>
+    <img src="/images/cards/<%=card.split(' ')[2]%>_<%=card.split(' ')[0]%>.jpg">
+  <% end %>
+<% end %><br>
+
+<p><%= session[:name] %>'s Cards</p>
+<% session[:player_cards].each do |card| %>
+<img src="/images/cards/<%=card.split(' ')[2]%>_<%=card.split(' ')[0]%>.jpg">
+<% end %><br>
+
+<% if !@player_stay  == true %>
+Do you want to hit or stay?
+<form action="/game/hit" method="post">
+  <input type="submit" value ="Hit">
+</form>
+
+<form action="/game/stay" method="post">
+  <input type="submit" value="Stay">
+</form>
+<% end  %>
